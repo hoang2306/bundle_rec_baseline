@@ -66,6 +66,9 @@ def get_cmd():
     parser.add_argument( "--bi_alpha", default=0.5, type=float, help="")
     # Attention <<<
 
+    # dataloader
+    parser.add_argument("--num_workers", default=4, type=int, help="num worker dataloader")
+
     args = parser.parse_args()
 
     return args
