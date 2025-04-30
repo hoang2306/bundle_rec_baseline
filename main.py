@@ -308,7 +308,7 @@ def log_metrics(conf, model, metrics, log_path, checkpoint_model_path, checkpoin
 
     return best_metrics, best_perform, best_epoch
 
-
+@torch.no_grad()
 def test(model, dataloader, conf):
     tmp_metrics = {}
     for m in ["recall", "ndcg"]:
@@ -329,15 +329,22 @@ def test(model, dataloader, conf):
         s_time = time.time()
         users, ground_truth_u_b, train_mask_u_b = batch # detach batch 
 
-        user_list.append(users)
+        user_list.append(users.cpu())
 
         pred_b = model.evaluate(rs, users.to(device)).to('cpu')
+        del users 
+        
         e_time = time.time() - s_time
         pred_b = pred_b - 1e8 * train_mask_u_b
+        del train_mask_u_b
+
         tmp_metrics = get_metrics(tmp_metrics, ground_truth_u_b, pred_b, conf["topk"])
         d_time = time.time()-  s_time
 
-        score, predict_list = torch.topk(pred_b, 100)
+        pred_cpu = pred_b.cpu()
+        del pred_b
+
+        score, predict_list = torch.topk(pred_cpu, 100)
         bundle_list.append(predict_list)
         score_list.append(score)
 
